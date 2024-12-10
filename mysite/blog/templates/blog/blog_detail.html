@@ -1,0 +1,141 @@
+{% extends 'blog/base.html' %}
+
+{% block content %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+
+<div class="container mt-4">
+    <!-- Blog Details -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <!-- Post Photo -->
+            {% if blog_detail.photo %}
+            <img src="{{ blog_detail.photo.url }}" alt="{{ blog_detail.title }}" class="img-fluid mb-3">
+            {% endif %}
+    
+            <!-- Post Title and Author -->
+            <h1 class="card-title">{{ blog_detail.title }}</h1>
+            <p class="text-muted">
+                <i class="fa-solid fa-user"></i> Author: {{ blog_detail.author }}
+            </p>
+    
+            <!-- Post Content -->
+            <p class="card-text">{{ blog_detail.content }}</p>
+    
+            <!-- Post Date -->
+            <p class="text-muted">
+                <i class="fa-solid fa-calendar-alt"></i> Created on {{ blog_detail.date_created|date:"F j, Y" }}
+            </p>
+    
+            <hr>
+    
+            <!-- Average Rating -->
+            <div>
+                <h4>
+                    Average Rating:
+                    <span class="badge bg-warning text-dark">
+                        {{ avg_rating|floatformat:1 }} / 5.0
+                    </span>
+                </h4>
+                <small>Based on {{ comment_count }} {{ comment_count|pluralize:"comment,comments" }}</small>
+            </div>
+        </div>
+    </div>
+    
+
+    <!-- Comments Section -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            <h5>Comments <span class="badge bg-primary">{{ comment_count }}</span></h5>
+        </div>
+        <div class="card-body">
+            {% for comment in comments %}
+            <div class="mb-3">
+                <p class="mb-1">
+                    <strong>{{ comment.author }}</strong>
+                    <span class="text-muted">on {{ comment.date_created|date:"F j, Y, g:i a" }}</span>
+                </p>
+                <p class="mb-1">{{ comment.content }}</p>
+                <p class="text-warning">
+                    <i class="fa-solid fa-star"></i> Rating: {{ comment.rating|floatformat:1 }}
+                </p>
+                <hr>
+            </div>
+            {% empty %}
+            <p class="text-muted">No comments yet. Be the first to leave a comment!</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <style>
+        .rating-star {
+            font-size: 1.5rem;
+            color: #ddd; /* Default star color */
+            cursor: pointer;
+        }
+        .rating-star.text-warning {
+            color: #ffc107; /* Highlighted star color */
+        }
+    </style>
+    
+    <!-- Comment Form -->
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h5>Leave a Comment</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" id="comment-form">
+                {% csrf_token %}
+                
+                <!-- Star Rating -->
+                <div class="mb-3">
+                    <label for="rating" class="form-label">Rating</label>
+                    <div id="rating-stars" class="d-flex align-items-center">
+                        <!-- Stars -->
+                        <i class="fa-solid fa-star rating-star" data-value="1"></i>
+                        <i class="fa-solid fa-star rating-star" data-value="2"></i>
+                        <i class="fa-solid fa-star rating-star" data-value="3"></i>
+                        <i class="fa-solid fa-star rating-star" data-value="4"></i>
+                        <i class="fa-solid fa-star rating-star" data-value="5"></i>
+                    </div>
+                    <input type="hidden" name="rating" id="rating-input" value="0">
+                </div>
+                
+                <!-- Comment -->
+                <div class="mb-3">
+                    {{ form.content.label_tag }}
+                    {{ form.content }}
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-paper-plane"></i> Submit
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const stars = document.querySelectorAll('.rating-star');
+            const ratingInput = document.getElementById('rating-input');
+
+            stars.forEach(star => {
+                star.addEventListener('click', function () {
+                    // Set the rating
+                    const ratingValue = this.getAttribute('data-value');
+                    ratingInput.value = ratingValue;
+
+                    // Highlight the stars
+                    stars.forEach(s => {
+                        if (s.getAttribute('data-value') <= ratingValue) {
+                            s.classList.add('text-warning'); // Highlight selected stars
+                        } else {
+                            s.classList.remove('text-warning');
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+
+</div>
+{% endblock %}
